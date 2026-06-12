@@ -43,19 +43,24 @@ Run directory: `~/.claude/dev-pipeline/runs/<REPO>-<ISSUE>/`
 - status: { context, prepare, implement, review, test, ship, archive } = pending|in-progress|done
 - decisions:
   - <단계에서 내린 비자명 결정 한 줄씩>
+- feature: <slug>
+- cycle_type: dev | feedback | bugfix
+- cycle_seq: <n>
+- spec_path: features/<slug>/spec.md
+- adr_paths: []
 ```
 
 ## Step ↔ Sub-agent Mapping
 
 | # | Step | Model | Skill to Follow | Notes |
 |---|------|-------|-----------------|-------|
-| 1 | Context gathering + plan | **opus** | `dp-context` | Outputs `plan.md` + `todo.md` |
+| 1 | Context gathering + plan | **opus** | `dp-context` | Outputs `plan.md` + `todo.md`; 타입별 spec 분기 |
 | 2 | Prepare (worktree/branch) | sonnet | `dp-prepare` | Branches after repo detection |
-| 3 | Implement | opus or sonnet | `dp-implement` | opus for complex work, sonnet by default |
-| 4 | Code review | sonnet | `dp-review` | |
+| 3 | Implement | opus or sonnet | `dp-implement` | opus for complex work, sonnet by default; 비자명 결정 시 ADR 작성 |
+| 4 | Code review | sonnet | `dp-review` | spec 수용기준 대조 + ADR 결정 추적 |
 | 5 | Test | sonnet | `dp-test` | |
 | 6 | PR + deploy | sonnet | `dp-ship` | PR → CI → **pre-deploy approval** → deploy |
-| 7 | Archive | sonnet | `dp-archive` | Delete worktree + write permanent record |
+| 7 | Archive | sonnet | `dp-archive` | Delete worktree + write permanent record; cycles/ + feature.md/spec.md/index.md 갱신 |
 
 > 한글: 각 단계는 위 표의 모델과 스킬에 따라 서브에이전트로 위임한다. step 3은 작업 복잡도에 따라 opus/sonnet을 선택한다.
 
@@ -106,12 +111,20 @@ digraph gates {
 ## What the Main Agent Does at Start
 
 1. Identify the issue: extract the issue number and repo from the Jira text/URL/`CSD-XXXX` the user provided. Ask if unclear.
+1.5. **Cycle router:** Before the main stages, determine two things.
+   - **Feature key:** Look up the CSD→slug mapping in `features/index.md`. If new, ask the user for a slug, create `features/<slug>/` (with `feature.md` based on `templates/feature.md`). If existing, load it.
+   - **Type:** Determine dev/feedback/bugfix from the issue content. Ask the user if unclear.
+   - Record results in state: `feature`, `cycle_type`, `cycle_seq`, `spec_path`. `cycle_seq` = the next number inside `cycles/` for that feature.
 2. Create the run directory and initialize `state.md`.
 3. Delegate to sub-agents step by step per the table → respect gates → update state, and repeat.
 4. After step 7, notify the user of the permanent archive path.
 
 > 한글:
 > 1. 이슈 식별: 유저가 준 Jira 텍스트/URL/`CSD-XXXX`에서 이슈번호·repo 파악. 불명확하면 질문.
+> 1.5. **사이클 라우터:** 본격 단계 전 두 가지를 정한다.
+>    - **기능 키:** `features/index.md`에서 CSD→slug 매핑 조회. 신규면 유저에게 slug를 묻고 `features/<slug>/`(+ templates/feature.md 기반 feature.md) 생성, 기존이면 로드.
+>    - **타입:** 이슈 내용으로 dev/feedback/bugfix 판정. 불명확하면 유저에게 질문.
+>    - 결과를 state의 feature/cycle_type/cycle_seq/spec_path에 기록. cycle_seq = 해당 기능 cycles/ 내 다음 번호.
 > 2. 런 디렉토리 생성, `state.md` 초기화.
 > 3. step 1부터 표대로 서브에이전트 위임 → 게이트 준수 → state 갱신 반복.
 > 4. step 7 후 영구 아카이브 경로를 유저에게 알림.

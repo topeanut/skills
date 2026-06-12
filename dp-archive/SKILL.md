@@ -17,46 +17,34 @@ description: Use when a dev-pipeline task is shipped and you need to clean up an
 
 ## Procedure
 
-1. **Write permanent archive** — `~/.claude/dev-pipeline/archive/<ISSUE>-<slug>.md`:
-   ```markdown
-   # <ISSUE> — <한 줄 제목>
-   - repo: <repo>
-   - branch: <branch>
-   - pr: <pr_url>
-   - issue: <issue_url>
-   - 완료일: <YYYY-MM-DD>   # 오늘 날짜를 절대 날짜로
-
-   ## 무엇을 했나
-   - <변경 요약 3~6줄>
-
-   ## 바뀐 파일
-   - <주요 파일 목록>
-
-   ## 결정/메모
-   - <state.md decisions 정리 — 나중에 "왜 이렇게 했지"에 답할 내용>
-   ```
-   - Purpose: a single searchable file so that the question "did I do something like this before?" can be answered later.
-2. **Remove the worktree:**
+1. **Write cycle note** — `features/<slug>/cycles/<seq>-<type>-<ISSUE>.md` based on `templates/cycle.md`.
+2. **Update feature index** — add a row to the cycle list in `features/<slug>/feature.md` and update the status.
+3. **Update spec status** — reflect the "last updated" date and acceptance criteria check state in `spec.md` (bugfix: check only, no change history entry).
+4. **Update global mapping** — in `features/index.md`, add a slug row (if new feature) and append this ISSUE to the issue list.
+5. **Remove the worktree:**
    ```bash
    git worktree remove <worktree-path>        # 변경 남았으면 확인 후 --force
    git worktree prune
    ```
    - Before removal, confirm there are no unpushed commits or unsaved changes. If any exist, stop and report to the user.
-3. **Clean up the run directory (optional).** `~/.claude/dev-pipeline/runs/<REPO>-<ISSUE>/` may be kept or removed — the authoritative record has been moved to the archive, so it is safe to delete.
+6. **Clean up the run directory (optional).** `~/.claude/dev-pipeline/runs/<REPO>-<ISSUE>/` may be kept or removed — the authoritative record has been moved to the feature folder, so it is safe to delete.
 
 > 한글:
-> 1. **영구 아카이브 작성** — 목적: 나중에 "예전에 이런 작업 안 했나?" 질문에 답하도록 검색 가능한 한 파일.
-> 2. **워크트리 삭제:** 삭제 전 미푸시 커밋·미저장 변경 없는지 확인. 있으면 멈추고 유저에게 보고.
-> 3. **런 디렉토리 정리(선택).** `~/.claude/dev-pipeline/runs/<REPO>-<ISSUE>/`는 보존하거나 정리 — 정본 기록은 archive로 옮겨졌으므로 안전.
+> 1. **사이클 노트 작성** — `templates/cycle.md` 기반 `features/<slug>/cycles/<seq>-<type>-<ISSUE>.md`.
+> 2. **기능 인덱스 갱신** — `features/<slug>/feature.md` 사이클 목록에 행 추가, 상태 갱신.
+> 3. **스펙 상태 갱신** — `spec.md`의 "최종 갱신"·수용기준 체크 상태 반영(bugfix는 체크만, 변경이력 추가 없음).
+> 4. **전역 매핑 갱신** — `features/index.md`에 (신규 기능이면) slug 행 추가, 이슈 목록에 이번 ISSUE 추가.
+> 5. **워크트리 삭제:** 삭제 전 미푸시 커밋·미저장 변경 없는지 확인. 있으면 멈추고 유저에게 보고.
+> 6. **런 디렉토리 정리(선택).** `~/.claude/dev-pipeline/runs/<REPO>-<ISSUE>/`는 보존하거나 정리 — 정본 기록은 feature 폴더로 옮겨졌으므로 안전.
 
 ## Return (to orchestrator)
 
-- Archive file path
+- Cycle note path + updated feature.md / spec.md / index.md paths
 - Worktree removal result
 - Pipeline completion summary (issue, PR, deployment status)
 
 > 한글:
-> - 아카이브 파일 경로
+> - cycle note 경로 + 갱신된 feature.md/spec.md/index.md 경로
 > - 워크트리 삭제 결과
 > - 파이프라인 완료 요약(이슈, PR, 배포 상태)
 

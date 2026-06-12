@@ -28,6 +28,9 @@ description: Use when a dev-pipeline plan is approved and the worktree is ready,
    - `after-implement` / `after-pr` → report once after the full implementation is complete.
 5. **Validate.** Pass typecheck/lint scoped to changed files (filter to changed packages only). Confirm no new errors.
 6. **Stop when blocked.** If the plan conflicts with the code or is ambiguous, do not guess — return with questions.
+7. **Record non-obvious decisions (ADR):** Whenever an architecture/interface/trade-off decision is made during implementation, write `features/<slug>/adr/000n-<slug>.md` based on `templates/adr.md`.
+   - Number = max existing adr/ number + 1. Immutable — do not modify existing ADRs. If a decision is reversed, write a new number and mark the old ADR status as `대체됨(→ ADR-000m)`.
+   - Append the written ADR path to `state.adr_paths`.
 
 > 한글:
 > 1. **워크트리 안에서만 작업.** 다른 워크트리/메인 체크아웃 건드리지 않는다.
@@ -38,17 +41,22 @@ description: Use when a dev-pipeline plan is approved and the worktree is ready,
 >    - `after-implement` / `after-pr` → 전체 구현 후 1회 보고.
 > 5. **검증.** 변경 파일 기준 typecheck/lint 통과(변경 패키지만 필터). 새 에러 없음 확인.
 > 6. **막히면 멈춤.** 플랜과 코드가 충돌하거나 모호하면 추측하지 말고 질문거리로 반환.
+> 7. **비자명 결정 기록(ADR):** 구현 중 아키텍처/인터페이스/트레이드오프 결정을 내릴 때마다 `templates/adr.md` 기반으로 `features/<slug>/adr/000n-<slug>.md` 작성.
+>    - 번호는 기존 adr/ 최대값+1. 불변 — 기존 ADR 수정 금지, 뒤집으면 새 번호로 작성하고 옛 ADR 상태를 `대체됨(→ ADR-000m)`으로 표기.
+>    - 작성한 ADR 경로를 state adr_paths에 append.
 
 ## Return Values (to orchestrator)
 
 - Completed todo items, list of changed files (brief)
 - typecheck/lint results
 - Non-obvious implementation decisions (to be recorded in `state.md` under `decisions`) + open questions
+- List of written ADR paths (for updating `state.adr_paths`)
 
 > 한글:
 > - 완료한 todo 항목, 변경 파일 목록(짧게)
 > - typecheck/lint 결과
 > - 비자명한 구현 결정(state.md `decisions`에 적히도록) + 미결 질문
+> - 작성한 ADR 경로 목록(state adr_paths 갱신용)
 
 ## Prohibited
 

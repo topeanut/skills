@@ -12,8 +12,10 @@ description: Use when dev-pipeline implementation is done and the diff needs rev
 ## Input
 
 - Worktree path, list of changed files, `plan.md` (for acceptance-criteria cross-check), `state.md`
+- `features/<slug>/spec.md`, `adr_paths` touched by this cycle
 
 > 한글: 워크트리 경로, 변경 파일 목록, `plan.md`(수용 기준 대조용), `state.md`
+> `features/<slug>/spec.md`, 이 사이클이 건드린 `adr_paths`
 
 ## Procedure
 
@@ -21,14 +23,18 @@ description: Use when dev-pipeline implementation is done and the diff needs rev
 2. **Multi-axis review.** Five axes per `agent-skills:review` — correctness / readability / architecture / security / performance. (Axes can be branched within a single step.)
    - If security concerns are significant, add a `security-review` perspective.
 3. **Cross-check acceptance criteria.** Verify item by item whether the acceptance criteria in plan.md are actually satisfied.
-4. **Summarize findings.** One line per finding with severity tags (blocker/should/nit). Omit praise and out-of-scope suggestions.
+4. **Acceptance criteria vs spec:** Cross-check each acceptance criteria checkbox in `spec.md` against the implementation and tests. Report any unmet items as blockers.
+5. **Decision tracing:** For every non-obvious decision in the diff, verify that a corresponding ADR exists in `adr_paths`. If absent, either require ADR creation or explicitly note it is trivial.
+6. **Summarize findings.** One line per finding with severity tags (blocker/should/nit). Omit praise and out-of-scope suggestions.
 
 > 한글:
 > 1. **diff 확보.** 워크트리에서 `git diff origin/main...HEAD` 또는 미커밋이면 작업트리 diff.
 > 2. **다축 검토.** `agent-skills:review` 기준 5축 — 정확성 / 가독성 / 아키텍처 / 보안 / 성능. (한 단계 안에서 축별로 갈래 가능)
 >    - 보안 우려가 크면 `security-review` 관점 추가.
 > 3. **수용 기준 대조.** plan.md의 수용 기준을 실제로 만족하는지 항목별 확인.
-> 4. **소견 정리.** 심각도 태그(blocker/should/nit)로 한 줄씩. 칭찬·범위 밖 제안은 생략.
+> 4. **수용기준 대조(spec):** spec.md의 각 수용기준 체크박스를 구현/테스트와 대조. 미충족 항목은 차단 사유로 보고.
+> 5. **결정 추적:** diff의 비자명 결정마다 대응 ADR이 adr_paths에 있는지 확인. 없으면 ADR 작성 요구(또는 사소함을 명시).
+> 6. **소견 정리.** 심각도 태그(blocker/should/nit)로 한 줄씩. 칭찬·범위 밖 제안은 생략.
 
 ## Return (to orchestrator)
 

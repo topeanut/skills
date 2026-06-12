@@ -15,6 +15,7 @@ Whatever the orchestrator provides, among the following:
 - Issue number (`CSD-XXXX`), Jira URL, or **pasted issue body text**
 - Related Slack channel/thread (if available)
 - Run-directory path (where `state.md` and output artifacts are saved)
+- Feature slug, cycle_type, and spec_path determined by the cycle router
 
 > Jira MCP is not currently connected. If only a URL is given with no body text, **ask the user to paste the issue body** (authentication pages cannot be read automatically).
 
@@ -22,6 +23,7 @@ Whatever the orchestrator provides, among the following:
 > - 이슈번호(`CSD-XXXX`), Jira URL 또는 **붙여넣은 이슈 본문 텍스트**
 > - 관련 Slack 채널/스레드(있으면)
 > - 런 디렉토리 경로(`state.md`, 산출물 저장 위치)
+> - 라우터가 정한 feature slug, cycle_type, spec_path
 >
 > Jira MCP는 현재 미연결. URL만 있고 본문이 없으면 **유저에게 이슈 본문을 붙여달라고 요청**한다(인증 페이지는 자동으로 못 읽음).
 
@@ -30,6 +32,10 @@ Whatever the orchestrator provides, among the following:
 1. **Read the issue.** Extract the goal, acceptance criteria, constraints, and related files/screens from the body. If anything is ambiguous, state your assumptions explicitly and collect questions to ask.
 2. **Augment with Slack (if available).** Use `slack_search_messages`/`slack_get_thread_replies` to gather decisions, background context, and related PRs. (Skip if unavailable.)
 3. **Recon the codebase (read-only).** Use Grep/Glob to locate the areas the issue points to. Understand existing patterns and adjacent code.
+3.5. **Type-based spec handling** (based on `templates/spec.md`):
+   - `dev`: Create a new `features/<slug>/spec.md` (goal, acceptance criteria, scope).
+   - `feedback`: Load the existing `spec.md`, augment — add one line to the change history, append new acceptance criteria.
+   - `bugfix`: Do not modify `spec.md`; quote the violated acceptance criteria items in `plan.md` instead.
 4. **Write `plan.md`.** Follow the pattern from `superpowers:writing-plans` / `agent-skills:plan`. Include:
    - One-line goal, acceptance criteria (as checkable items)
    - Affected files/modules, approach, risks, and open questions
@@ -40,6 +46,10 @@ Whatever the orchestrator provides, among the following:
 > 1. **이슈 읽기.** 본문에서 목표·수용기준·제약·관련 파일/화면을 추출. 모호하면 가정을 명시하고 질문거리를 모은다.
 > 2. **Slack 보강(있으면).** `slack_search_messages`/`slack_get_thread_replies`로 결정·배경·관련 PR을 수집. (없으면 스킵)
 > 3. **코드베이스 정찰(읽기 전용).** 이슈가 가리키는 영역을 Grep/Glob로 위치 확인. 기존 패턴·인접 코드 파악.
+> 3.5. **타입별 스펙 처리** (`templates/spec.md` 기반):
+>    - `dev`: `features/<slug>/spec.md`를 새로 작성(목표·수용기준·범위).
+>    - `feedback`: 기존 spec.md 로드 후 보강 — 변경 이력에 한 줄 추가, 신규 수용기준 추가.
+>    - `bugfix`: spec.md를 바꾸지 않고 위반된 수용기준 항목을 plan.md에 인용.
 > 4. **`plan.md` 작성.** 패턴은 `superpowers:writing-plans` / `agent-skills:plan` 참조. 포함:
 >    - 목표 한 줄, 수용 기준(체크 가능하게)
 >    - 영향 파일/모듈, 접근 방식, 위험·미결 질문
@@ -50,10 +60,12 @@ Whatever the orchestrator provides, among the following:
 
 - `<run-directory>/plan.md`
 - `<run-directory>/todo.md`
+- `features/<slug>/spec.md` (dev=신규, feedback=갱신, bugfix=불변)
 
 > 한글:
 > - `<런디렉토리>/plan.md`
 > - `<런디렉토리>/todo.md`
+> - `features/<slug>/spec.md` (dev=신규, feedback=갱신, bugfix=불변)
 
 ## Return Value (to the orchestrator)
 
