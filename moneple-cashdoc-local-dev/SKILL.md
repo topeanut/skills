@@ -1,6 +1,6 @@
 ---
 name: moneple-cashdoc-local-dev
-description: Run the moneple (MonepleMainWeb) cashdoc community local dev server so its changes are actually viewable in a browser. Use when moneple cashdoc community redirects to test.cashdoc.me, when www.local.cashdoc.mnpp.cc shows old/deployed code, when verifying moneple search-bar/header changes for the cashdoc tenant, or when `local.cashdoc.mnpp.cc/community` bounces to deployed.
+description: Run the moneple cashdoc community local dev server (MonepleMainWeb = Next; MonepleWeb = astro, the newer community) so its changes are actually viewable in a browser. Use when moneple cashdoc community redirects to test.cashdoc.me, when www.local.cashdoc.mnpp.cc shows old/deployed code, when verifying moneple search-bar/header changes for the cashdoc tenant, when `local.cashdoc.mnpp.cc/community` bounces to deployed, or when the astro (MonepleWeb) dev server 502s / redirect-loops behind localias.
 ---
 
 # moneple Cashdoc Community Local Dev Setup
@@ -106,3 +106,28 @@ If a certificate warning appears, click Advanced → Proceed.
 Remove the `local.test.cashdoc.me: 3500` line from `localias.yaml`, then run `sudo localias reload`. Kill the moneple 3500 process.
 
 > 한글: localias.yaml에서 `local.test.cashdoc.me: 3500` 줄 제거 + `sudo localias reload`. moneple 3500 프로세스 kill.
+
+## MonepleWeb (astro) variant — the newer cashdoc community
+
+The cashdoc community also has an **astro** repo, `MonepleWeb` (`/Users/ljh/Desktop/work/cashwalk-repo/MonepleWeb`, origin `cashwalk/MonepleWeb`, `partner/*` branches). This is a **different repo** from `MonepleMainWeb` (Next). Same tenant/subdirectory domain model (`local.test.cashdoc.me`), but the dev-server transport differs.
+
+**Key gotcha — astro dev serves HTTPS, localias proxies HTTP → 502 / redirect-loop:**
+- `astro.config.mjs` enables `httpsConfig` when `_wildcard.${MONEPLE_HOST}.pem` (default `MONEPLE_HOST=mnpp.cc`) exists in cwd — those wildcard pem files are committed, so `astro dev` serves **HTTPS** on 3500.
+- localias's `local.test.cashdoc.me: 3500` proxies **HTTP** to the backend → HTTP→HTTPS mismatch → **502**.
+- Accessing astro directly at `https://local.test.cashdoc.me:3500/` gets a **508 redirect loop** — the app's locale/subdirectory redirects rebuild URLs **without** the `:3500` port, so they bounce to the 443 domain and loop.
+
+**Fix — force astro to serve HTTP so localias (HTTP proxy) works:** override `MONEPLE_HOST` to any value with no matching pem, disabling `httpsConfig`:
+```bash
+export PATH="$HOME/.nvm/versions/node/v22.22.1/bin:$PATH"
+cd /Users/ljh/Desktop/work/cashwalk-repo/MonepleWeb
+MONEPLE_HOST=disable-https NODE_TLS_REJECT_UNAUTHORIZED=0 \
+  ./node_modules/.bin/env-cmd -f ./env/.dev-local \
+  ./node_modules/.bin/astro dev --mode dev-local --host 0.0.0.0 --port 3500
+```
+- astro now prints `Local http://localhost:3500/` (HTTP). Run in background (`run_in_background: true`).
+- With localias already mapping `local.test.cashdoc.me: 3500` and running (`sudo localias start`), open **`https://local.test.cashdoc.me/`** (443, no port) — returns 200, redirects stay on-domain (no loop).
+- The language selector / mobile-only header bits are `pc:hidden` → use **mobile viewport** (DevTools device toolbar) to see them.
+- Verify via curl (localias path): `curl -skL --resolve local.test.cashdoc.me:443:127.0.0.1 https://local.test.cashdoc.me/ -o /tmp/x.html; wc -c /tmp/x.html` — a ~900KB body = good render; 13 bytes = 508 loop (astro still HTTPS, MONEPLE_HOST override missing).
+- `env/.dev-local` and the wildcard pem files must exist; SSR calls a self-signed API so `NODE_TLS_REJECT_UNAUTHORIZED=0` is still required.
+
+> 한글: cashdoc 커뮤니티의 **astro 신규 repo** `MonepleWeb`(cashwalk/MonepleWeb, `partner/*`)는 MonepleMainWeb(Next)과 별개. 도메인 모델은 같으나 dev 서버가 **https로 3500** 서빙(cwd의 `_wildcard.mnpp.cc.pem` 때문). localias는 http로 프록시해 **502**, `:3500` 직접은 리다이렉트가 포트를 떼서 **508 루프**. **해결: `MONEPLE_HOST=<pem 없는 값>`으로 astro를 http 서빙시키면** localias(http 프록시)가 정상 → `https://local.test.cashdoc.me/`(포트 없이) 200. 모바일 전용 요소는 `pc:hidden`이라 모바일 뷰로 확인. 검증은 위 curl(약 900KB=정상, 13B=508 루프).
