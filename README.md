@@ -10,8 +10,8 @@
 
 | 스킬 | 설명 |
 |------|------|
+| [`browser-access`](./browser-access/SKILL.md) | 브라우저 기반 작업(UI 검증, 시각 테스트, 네트워크 디버깅, DOM 검사) 시작 시. Claude in Chrome 우선, Chrome DevTools MCP는 계측·폴백. 브라우저 MCP 실패·401/403·로그인 화면·권한 부여 필요 시에도 사용. |
 | [`cashdoc-webview-worktree`](./cashdoc-webview-worktree/SKILL.md) | cashdoc-webview git 워크트리 부트스트랩 — 새 워크트리에서 node_modules/.env 셋업해 lint/typecheck/build 되게. pnpm/engine/env/TTY 에러나 커밋 전 검증 시. |
-| [`chrome-devtools-mcp-auth`](./chrome-devtools-mcp-auth/SKILL.md) | 브라우저 기반 작업(UI 검증, 시각 테스트, 네트워크 디버깅, DOM 검사) 시작 시. Chrome DevTools MCP 실패·401/403·로그인 화면·권한 부여 필요 시에도 사용. |
 | [`moneple-cashdoc-local-dev`](./moneple-cashdoc-local-dev/SKILL.md) | moneple(MonepleMainWeb) cashdoc 커뮤니티 로컬 dev 서버 실행 — 배포본으로 바운스/구버전 표시될 때, 검색바·헤더 변경 검증 시. |
 | [`ship-pr`](./ship-pr/SKILL.md) | 기능/수정이 배포 준비 완료됐을 때 — 브랜치·커밋 후 dev 배포 및 리뷰용 PR 생성. |
 | [`test-followup`](./test-followup/SKILL.md) | 프로덕션 코드 작성/수정 후 완료 보고 전 — 변경분에 대한 테스트 추가 제안 트리거. |

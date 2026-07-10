@@ -19,13 +19,13 @@ description: Use when dev-pipeline code passed review and you must prove it work
 
 1. **Run existing tests.** Execute the test suite within the scope of the change to confirm no regressions.
 2. **Decide if new tests are needed.** Using `test-followup` criteria, determine whether the behavior change is testable; if so, write tests following the project's conventions (Vitest/Jest/Playwright, file location, naming) — applying the `agent-skills:test` principle of writing failing tests first.
-3. **Runtime verification.** For UI/flow changes where unit tests are insufficient, use the `verify` skill to launch the app and observe actual behavior (see `chrome-devtools-mcp-auth` for browser access).
+3. **Runtime verification.** For UI/flow changes where unit tests are insufficient, use the `verify` skill to launch the app and observe actual behavior (see `browser-access` for browser access).
 4. **Check acceptance criteria.** Confirm that the actual results satisfy each acceptance criterion in plan.md. Follow `superpowers:verification-before-completion` — secure concrete output evidence before claiming a pass.
 
 > 한글:
 > 1. **기존 테스트 실행.** 변경 영향 범위의 테스트 스위트를 돌려 회귀 없음 확인.
 > 2. **새 테스트 필요 판단.** `test-followup` 기준으로 동작이 검증 가능한 변경인지 보고, 적합하면 프로젝트 컨벤션(Vitest/Jest/Playwright, 위치, 네이밍)대로 테스트 작성 — `agent-skills:test`(실패 테스트 먼저) 원칙.
-> 3. **런타임 검증.** 단위 테스트로 부족한 UI/플로우 변경은 `verify` 스킬로 앱을 띄워 실제 동작 관찰(브라우저는 `chrome-devtools-mcp-auth` 참고).
+> 3. **런타임 검증.** 단위 테스트로 부족한 UI/플로우 변경은 `verify` 스킬로 앱을 띄워 실제 동작 관찰(브라우저는 `browser-access` 참고).
 > 4. **수용 기준 대조.** plan.md 수용 기준을 실제 결과로 충족 확인. `superpowers:verification-before-completion` — 통과 주장 전 실제 출력 근거 확보.
 
 ## Return (to orchestrator)
