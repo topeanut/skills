@@ -24,15 +24,17 @@ git worktree add -b feat/CSD-XXXX-<desc> ../cashdoc-webview-CSD-XXXX origin/main
 
 > 한글: stale한 main에서 분기하면 안 된다. main이 GA/astro 등 대형 리팩터를 받았을 수 있고(예: GA가 `apps/web/.../google-analytics/` → `packages/utils/src/ga/`로 이전, `logEvent`가 `(appData, fn)` → `(fn)` 단일 인자로 변경), 구식 base로 작업하면 test 배포 머지에서 구조 충돌이 난다. 작업 전 `git log origin/main -1`로 최신인지 확인.
 
-## 1. Node 22 (Required)
+## 1. Node 24 (Required)
 
-`apps/web` has `engines.node` set to `22.x`. If the system default is v24 or another version, `pnpm install` will fail with `ERR_PNPM_UNSUPPORTED_ENGINE`. Use nvm to put Node 22 on PATH (repeat for every Bash call):
+Root and `apps/web` have `engines.node` set to `24.x`, and `.nvmrc` pins `v24.15.0`. On a mismatched version `pnpm install` still completes but emits `[WARN] Unsupported engine`, and the local run drifts from CI. Use nvm to put Node 24 on PATH (repeat for every Bash call):
 
-> 한글: `apps/web`의 `engines.node`가 `22.x`. 시스템 기본이 v24 등이면 `pnpm install`이 `ERR_PNPM_UNSUPPORTED_ENGINE`로 실패. nvm으로 22를 PATH에 올린다(매 Bash 호출마다).
+> 한글: 루트와 `apps/web`의 `engines.node`가 `24.x`이고 `.nvmrc`는 `v24.15.0` 고정. 버전이 어긋나면 `pnpm install`이 실패하진 않지만 `[WARN] Unsupported engine`이 뜨고 CI와 로컬이 어긋난다. nvm으로 24를 PATH에 올린다(매 Bash 호출마다).
 
 ```bash
-export PATH="$HOME/.nvm/versions/node/v22.22.1/bin:$PATH"   # 설치본은 `ls ~/.nvm/versions/node`로 확인
+export PATH="$HOME/.nvm/versions/node/v24.15.0/bin:$PATH"   # 설치본은 `ls ~/.nvm/versions/node`로 확인
 ```
+
+> ⚠️ 이 레포는 과거 `22.x`였다가 24로 올라갔다. 엔진 요구는 **항상 `.nvmrc`와 루트 `package.json`의 `engines`로 확인**하고, 이 문서 숫자를 그대로 믿지 말 것.
 
 ## 2. Install Dependencies
 
@@ -56,7 +58,10 @@ A new worktree has no `.env`, so the `typegen` pre-step in typecheck fails on en
 ```bash
 cp ../cashdoc-webview/apps/web/.env apps/web/.env
 cp ../cashdoc-webview/apps/web/.env.test apps/web/.env.test   # 있으면
+cp ../cashdoc-webview/apps/astro/.env apps/astro/.env         # astro 작업이면 필수
 ```
+
+> `apps/astro`에도 별도 `.env`가 있다. astro 페이지를 건드리면서 이걸 빠뜨리면 typecheck/build가 env 검증에서 깨진다.
 
 `.env` is gitignored so it will not be committed — this is safe.
 
@@ -64,19 +69,24 @@ cp ../cashdoc-webview/apps/web/.env.test apps/web/.env.test   # 있으면
 
 ## 4. Verification
 
+`turbo`는 전역 PATH에 없다. **로컬 바이너리로 호출**한다:
+
 ```bash
-# 변경 파일이 속한 패키지만 (web/utils 등)
-turbo typecheck lint --filter=@cashdoc/web --filter=@cashdoc/utils
+# 변경 파일이 속한 패키지만 (astro/web/ui/utils 등)
+./node_modules/.bin/turbo typecheck lint --filter=@cashdoc/astro --filter=@cashdoc/ui
 ```
 
-- lint = **oxlint** (`oxlint . --type-aware`). For specific files only: `cd apps/web && ../../node_modules/.bin/oxlint <path...>`.
-- format = prettier (`@ianvs/prettier-plugin-sort-imports`). Check changed files: `./node_modules/.bin/prettier --check <path...>`, auto-fix with `--write`.
-- The repo may have pre-existing lint warnings/errors — judge by whether **the changed files introduce new errors**.
+> ⚠️ **lint는 clean main에서도 red다.** `@cashdoc/astro`는 `no-deprecated-typography` 경고만 900건대(130여 파일)가 쌓여 있고 oxlint가 exit 1로 끝난다. turbo는 이때 형제 task(typecheck)까지 같이 죽여서 `typecheck: [ELIFECYCLE] Command failed`를 찍는데 **typecheck가 실패한 게 아니다.** 헷갈리면 typecheck를 단독으로 돌려 exit code를 확인한다:
+>
+> ```bash
+> cd apps/astro && pnpm run typecheck; echo "exit=$?"   # 정상이면 exit=0 / "0 errors"
+> ```
+>
+> 판정 기준은 **내가 바꾼 파일이 새 에러를 만들었는가**다. 전체 lint가 red인 것 자체는 baseline이므로 착수 직후(무수정 상태) 한 번 돌려 baseline을 기록해두면 비교가 쉽다.
 
-> 한글:
-> - lint = **oxlint** (`oxlint . --type-aware`). 특정 파일만: `cd apps/web && ../../node_modules/.bin/oxlint <path...>`.
-> - 포맷 = prettier (`@ianvs/prettier-plugin-sort-imports`). 변경 파일: `./node_modules/.bin/prettier --check <path...>`, 자동수정 `--write`.
-> - repo 전체엔 기존 lint 경고/에러가 있을 수 있으니 **변경 파일에 새 에러가 없는지**로 판단.
+- lint = **oxlint** (`oxlint . --type-aware`). 특정 파일만: `cd apps/astro && ../../node_modules/.bin/oxlint <path...>`.
+- 포맷 = prettier (`@ianvs/prettier-plugin-sort-imports`). 변경 파일: `./node_modules/.bin/prettier --check <path...>`, 자동수정 `--write`.
+- CI 결과 해석은 `pr-ci-status` 스킬 참고 — `🔧 Quality` job이 중간 exit code를 삼키고 `보고` job만 게이트한다.
 
 ## 5. Deploy / PR
 
