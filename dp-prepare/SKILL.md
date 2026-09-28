@@ -37,14 +37,22 @@ description: Use when a dev-pipeline plan is approved and you need an isolated w
 
 3. **Verification.** Confirm that typecheck/lint run on the packages to be changed (= setup succeeded). Success is judged by no new errors relative to changed files.
 
-4. **Open in VS Code.** After the worktree is ready and verified, open it in a new VS Code window so work can start in the right branch. Applies to **both** repo paths (cashdoc-webview and general).
+4. **Inherit MCP defaults for the new worktree (memory guard).** Claude Code only creates a `projects[<dir>]` entry in `~/.claude.json` on the first session in a directory, and every globally-configured MCP server defaults to ON there. A fresh worktree therefore boots figma / safari / chrome-devtools etc. even when the source repo has them switched off via `/mcp`. Pre-register the worktree so it copies the source repo's `disabledMcpServers`:
+   ```bash
+   python3 ~/.claude/skills/dp-prepare/scripts/inherit-mcp-defaults.py <source-repo-path> <new-worktree>
+   ```
+   - Copies `disabledMcpServers` from the source repo's entry; falls back to `["safari-devtools", "figma"]` if the source has none. Idempotent, backs up `~/.claude.json` first.
+   - Applies to **both** repo paths (cashdoc-webview and general). Run it **before** `EnterWorktree` / any session opens in the worktree.
+   - Non-blocking: on failure, report it but do not fail the stage.
+
+5. **Open in VS Code.** After the worktree is ready and verified, open it in a new VS Code window so work can start in the right branch. Applies to **both** repo paths (cashdoc-webview and general).
    ```bash
    code -n <new-worktree>
    ```
    - The worktree already has `feat/CSD-XXXX-<slug>` checked out, so opening the folder opens the branch.
    - Non-blocking: if `code` is missing or fails, report it but do not fail the stage.
 
-5. **Switch the session into the worktree (so Claude status follows the branch).** A plain `git worktree add` is invisible to Claude Code's native worktree panel ("for agents"), so the status line keeps showing `main`. After the worktree exists, enter it with the native tool so the session cwd + status track the new branch:
+6. **Switch the session into the worktree (so Claude status follows the branch).** A plain `git worktree add` is invisible to Claude Code's native worktree panel ("for agents"), so the status line keeps showing `main`. After the worktree exists, enter it with the native tool so the session cwd + status track the new branch:
    ```
    EnterWorktree(path: <new-worktree absolute path>)
    ```
@@ -56,8 +64,9 @@ description: Use when a dev-pipeline plan is approved and you need an isolated w
 > 1. **repo 감지 후 분기:** cashdoc-webview이면 `cashdoc-webview-worktree` 스킬을 따른다. 그 외 repo는 아래 일반 절차를 따른다.
 > 2. **일반 절차:** 브랜치명에 반드시 `CSD-XXXX` 포함. 반드시 최신 `origin/main` 기반으로 생성.
 > 3. **검증:** 변경 예정 패키지에서 typecheck/lint가 정상 실행되는지 확인. 변경 파일 기준 새 에러 없음으로 판단.
-> 4. **VS Code에서 열기:** 워크트리 준비·검증 완료 후 `code -n <워크트리경로>`로 **새 창**에서 연다. **두 repo 흐름 모두** 적용(cashdoc-webview, 일반). 워크트리에 이미 `feat/CSD-XXXX-<slug>`가 체크아웃돼 있어 폴더를 열면 그 브랜치가 열린다. `code` 없거나 실패해도 단계 실패로 처리하지 말고 보고만 한다.
-> 5. **세션을 워크트리로 진입(Claude status가 브랜치를 따라가게):** 순수 `git worktree add`는 Claude Code 네이티브 워크트리 패널("for agents")에 안 잡혀서 status가 계속 `main`으로 보인다. 워크트리 생성 후 네이티브 도구로 진입시켜 세션 cwd·status가 새 브랜치를 가리키게 한다 → `EnterWorktree(path: <워크트리 절대경로>)`. **반드시 `path` 사용**(방금 만든 워크트리), `name`은 `.claude/worktrees/`에 중복 워크트리를 새로 만드니 쓰지 말 것. **실행 주체는 메인 오케스트레이터 세션**이다 — 서브에이전트는 cwd가 launch 시 고정되어 서브에서 `EnterWorktree`해도 부모 세션 status는 `main`에 남는다. dp-prepare가 서브로 돌았다면 워크트리 경로만 반환하고, 서브 종료 후 오케스트레이터가 `EnterWorktree(path: ...)`를 호출한다. 되돌아갈 땐 `ExitWorktree(action: "keep")`(`git worktree add` 워크트리는 어차피 remove 거부됨).
+> 4. **새 워크트리에 MCP 기본값 상속(메모리 가드):** `~/.claude.json`의 `projects[<dir>]` 항목은 그 디렉토리에서 첫 세션을 열 때 생성되고, 글로벌 MCP 서버는 기본이 전부 ON이다. 그래서 새 워크트리는 원본 저장소에서 `/mcp`로 꺼 둔 figma / safari / chrome-devtools 등을 다시 전부 띄운다. 워크트리를 미리 등록해 원본의 `disabledMcpServers`를 복사한다 → `python3 ~/.claude/skills/dp-prepare/scripts/inherit-mcp-defaults.py <원본repo경로> <워크트리경로>`. 원본에 값이 없으면 `["safari-devtools", "figma"]` 기본값. 멱등이며 실행 전 `~/.claude.json` 백업. **두 repo 흐름 모두** 적용, `EnterWorktree`나 세션 진입 **전에** 실행. 실패해도 단계 실패로 처리하지 말고 보고만 한다.
+> 5. **VS Code에서 열기:** 워크트리 준비·검증 완료 후 `code -n <워크트리경로>`로 **새 창**에서 연다. **두 repo 흐름 모두** 적용(cashdoc-webview, 일반). 워크트리에 이미 `feat/CSD-XXXX-<slug>`가 체크아웃돼 있어 폴더를 열면 그 브랜치가 열린다. `code` 없거나 실패해도 단계 실패로 처리하지 말고 보고만 한다.
+> 6. **세션을 워크트리로 진입(Claude status가 브랜치를 따라가게):** 순수 `git worktree add`는 Claude Code 네이티브 워크트리 패널("for agents")에 안 잡혀서 status가 계속 `main`으로 보인다. 워크트리 생성 후 네이티브 도구로 진입시켜 세션 cwd·status가 새 브랜치를 가리키게 한다 → `EnterWorktree(path: <워크트리 절대경로>)`. **반드시 `path` 사용**(방금 만든 워크트리), `name`은 `.claude/worktrees/`에 중복 워크트리를 새로 만드니 쓰지 말 것. **실행 주체는 메인 오케스트레이터 세션**이다 — 서브에이전트는 cwd가 launch 시 고정되어 서브에서 `EnterWorktree`해도 부모 세션 status는 `main`에 남는다. dp-prepare가 서브로 돌았다면 워크트리 경로만 반환하고, 서브 종료 후 오케스트레이터가 `EnterWorktree(path: ...)`를 호출한다. 되돌아갈 땐 `ExitWorktree(action: "keep")`(`git worktree add` 워크트리는 어차피 remove 거부됨).
 
 ## Return (to orchestrator)
 
