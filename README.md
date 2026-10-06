@@ -15,6 +15,7 @@
 | [`running-cashdoc-simulator`](./running-cashdoc-simulator/SKILL.md) | cashdoc-webview 네이티브 앱 시뮬레이터(apps/simulator, `<branch>.sim.cashdoc.me`) 로컬 실행·디버깅 — localias 데몬/sudo/stuck-reload, 기기 없이 dev-login 토큰 주입, 웹뷰 빈 화면·프록시 502, 인앱(Bearer) 인증 검증 시. |
 | [`moneple-cashdoc-local-dev`](./moneple-cashdoc-local-dev/SKILL.md) | moneple(MonepleMainWeb) cashdoc 커뮤니티 로컬 dev 서버 실행 — 배포본으로 바운스/구버전 표시될 때, 검색바·헤더 변경 검증 시. |
 | [`ship-pr`](./ship-pr/SKILL.md) | 기능/수정이 배포 준비 완료됐을 때 — 브랜치·커밋 후 dev 배포 및 리뷰용 PR 생성. |
+| [`shipping-metric-dashboards`](./shipping-metric-dashboards/SKILL.md) | 캐시닥 웹 지면·기능의 사용 현황 대시보드 요청 시 — BigQuery 조회→HTML 목업→GA 이벤트→DE 마트 키→Prefect 적재→Evidence 페이지까지 단계별 통과 조건, 목업 대조, 터널 없는 미리보기, 배포 순서·운영 확인, 숫자를 바꾸는 데이터 함정. |
 | [`test-followup`](./test-followup/SKILL.md) | 프로덕션 코드 작성/수정 후 완료 보고 전 — 변경분에 대한 테스트 추가 제안 트리거. |
 
 ### dev-pipeline (이슈→PR 오케스트레이션 세트)
