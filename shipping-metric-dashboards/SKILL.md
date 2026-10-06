@@ -15,7 +15,7 @@ A dashboard ships through seven gated stages owned by different people. Most fai
 | # | Stage | Produce | Exit check |
 |---|---|---|---|
 | 1 | BigQuery | Queries on the **web dbt mart** `cashdoc-5f28d.dbt_cashdoc_503924473_original_mart.cashdoc` (not the app mart `cashwalk-971ff…`). Same path regex/login rule/bot filter the producer will use | Numbers reproduce on 2 dates |
-| 2 | HTML mockup | One HTML page shaped like Evidence (intro, numbered sections ①②…, filters, KPI strip, charts, metric descriptions). Real data where it exists; not-yet-tracked metrics drawn with **mock data and a visible "목" tag** | Lead approves it. Save the file + artifact link; it is the spec for stage 7 |
+| 2 | HTML mockup | **REQUIRED SUB-SKILL:** Use drafting-dashboard-mockups (reproducible folder, pipeline-producible numbers, planned metric names, visible "목" for untracked metrics) | Lead approves it. Keep the approved file; it is the spec for stage 6 |
 | 3 | GA events | Event spec as "button → expected event" doc, frontend PR, test-server check with GA debugger | Events visible in BigQuery intraday after prod deploy. **Record the exact prod deploy time** |
 | 4 | DE mart key | Web dbt mart loads every new `event_label` automatically; request only **new parameter keys** (`ep_<key>`) via the 오리지널 마트 Key workflow | Key columns present in the mart |
 | 5 | Prefect producer | Flow + SQL + registry entry; verify with `build_rows(as_of)` only (no production writes) | PR merged, then backfill run (see Release order) |
