@@ -33,13 +33,14 @@ The mockup is the spec for the GA events, the Prefect producer and the Evidence 
 > 한글: 저장 단위는 날짜×태그 하루 값이다. 기간 고유 사용자 수처럼 Evidence가 재현 못 하는 숫자는 쓰지 않는다. 비율은 합계÷합계, 사용자는 지면끼리 더하지 않는다.
 
 ## Page shape (copy Evidence, don't invent)
+- App chrome like production Evidence: sticky header (evidence logo → `https://main.evidence.smartdoctor.systems/`), **left sidebar** with the real dashboards grouped as in production (build the list from `evidence/pages/<group>/*.md` frontmatter `title` + `sidebar_position`, group title and group order from `<group>/index.md` `title`/`sidebar_position`; on ties copy the order shown on the production sidebar), the proposed page inserted at its planned spot, highlighted and tagged "제안" (other items open the production page in a new tab), breadcrumb `홈 › <그룹> › <페이지>`, hamburger toggle under ~900px.
 - Layout: intro panel (what it answers + scope list) → filter bar (기간 presets, 일간/주간, dimension dropdowns, **all functional**) → numbered sections ①②… each with a one-line sub → KPI strip → charts/tables.
 - Colors: Evidence `components/chartPalette.js` tokens only (`palette`, `lineAccents`, `accent.emphasis`); pick series colors ≥ OKLab ΔE 10 apart. The pastel `palette` alone can't separate 4+ series, so mix in the darker `lineAccents`. Status/ratio warnings in amber text.
 - Every widget gets a "지표 설명" with the **planned metric name + tags + calculation** (e.g. `cashdoc.coupon.click.users.count {section,name}`, "클릭 사용자 ÷ 진입 사용자"). Keep a METRICS dictionary in the page; it becomes `metricDescriptions.js`.
 - Not-yet-tracked metrics: draw with sample data, a visible "목" tag on the section and widget, and the event that will feed it.
 - Labels are user-facing words, never raw keys (`phr_empty` → "연동 안 함 · 내역 없음"). Descriptions are one short sentence in the existing Evidence tone; drop obvious "how to read" lines.
 
-> 한글: Evidence 구성을 그대로 따른다(소개→동작하는 필터→번호 섹션→KPI→차트). 색은 Evidence 팔레트만, 위젯마다 예정 지표명·태그·계산식을 적는다. 미수집 지표는 예시 데이터 + '목' 표시 + 필요한 이벤트. 라벨은 사용자 언어, 설명은 한 문장.
+> 한글: 운영 Evidence 겉모양(상단 헤더, 그룹별 대시보드 사이드바에 새 페이지를 '제안' 태그로 끼워 넣기, 브레드크럼, 모바일 햄버거)까지 똑같이 만든다. 본문은 Evidence 구성을 따른다(소개→동작하는 필터→번호 섹션→KPI→차트). 색은 Evidence 팔레트만, 위젯마다 예정 지표명·태그·계산식을 적는다. 미수집 지표는 예시 데이터 + '목' 표시 + 필요한 이벤트. 라벨은 사용자 언어, 설명은 한 문장.
 
 ## Before showing the lead
 1. Open it in a browser (serve the folder locally) and screenshot every section: horizontal bar labels not clipped, legends readable, empty states, filters change the charts.
@@ -56,4 +57,5 @@ The mockup is the spec for the GA events, the Prefect producer and the Evidence 
 | Filters that only look like filters | Wire them or remove them |
 | Period-distinct users, averaged ratios | Daily values, sum ÷ sum |
 | Invented palette | Evidence `chartPalette.js` tokens |
+| Bare page without the Evidence sidebar/header | Copy the production chrome so the lead sees where the page will live |
 | "Done" without opening it | Screenshot every section first |
