@@ -19,7 +19,7 @@ Give the user this command (their terminal, not a background task):
 python3 ~/.claude/skills/watching-app-ga-logs/scripts/ga_logcat.py
 ```
 
-It waits for a device, turns on Firebase verbose logging (`setprop log.tag.FA/FA-SVC VERBOSE`), prints events, and restores those properties on Ctrl-C.
+It waits for a device, prints a short Korean guide (sources, changed props, how to read a line), turns on Firebase verbose logging (`setprop log.tag.FA/FA-SVC VERBOSE`), prints events, and restores those properties on Ctrl-C.
 
 | Option | Use |
 |---|---|
@@ -30,6 +30,7 @@ It waits for a device, turns on Firebase verbose logging (`setprop log.tag.FA/FA
 | `--dump` | print events already in the logcat buffer, then exit (agent-friendly check) |
 | `--debug-app com.cashdoc.cashdoc` | also enable Firebase immediate upload / DebugView for that app |
 | `--serial <id>` | pick a device when several are connected |
+| `--quiet` | skip the startup guide (how events are caught, device props changed, how to read lines) |
 
 Output: `13:49:20.132  캐시닥  cashdoc_detail_more_button  tab=hospital_info button_name=review`
 

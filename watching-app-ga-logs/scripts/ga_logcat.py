@@ -239,6 +239,38 @@ def restore_props(device: Device, before: dict[str, str]) -> None:
         device.shell("setprop", key, value if value else "''")
 
 
+def print_guide(device: Device, model: str, running: set[str], debug_app: str | None) -> None:
+    """Explain on startup how events are caught and how to read the output."""
+    dim = lambda t: color(t, "2")
+    lines = [
+        color(f"● {model} ({device.serial}) 연결됨 · 실행 중 앱: {', '.join(sorted(running)) or '없음'}", "33"),
+        "",
+        color("어떻게 잡나요?", "1"),
+        "  웹뷰에서 GA가 나가면 앱이 네이티브 브릿지로 받아 Firebase에 넘기고, 그 과정이 기기 로그(logcat)에 남습니다.",
+        "  이 도구는 adb logcat을 실시간으로 읽어 아래 세 가지 로그에서 GA 이벤트만 골라 한 줄로 보여줍니다.",
+        f"    {color('캐시워크', '32')}  CASHWALK-LOG  FirebaseEventBridgeDelegate · fireBaseEvent = <이벤트> / {{파라미터 JSON}}",
+        f"    {color('캐시닥', '36')}    TESTER_LOG    DebugLog · sendLog -> <이벤트> + 줄마다 key=value (테스트 빌드)",
+        f"    {color('Firebase', '35')}  FA-SVC        Logging event: name=…, params=Bundle[…] (운영 빌드 대비, 앱 구분 불가)",
+        "  앱은 로그를 남긴 프로세스 PID로 구분하고, 같은 이벤트가 두 로그에 찍히면 한 번만 보여줍니다.",
+        "",
+        color("기기에서 바꾼 설정 (Ctrl-C로 끝내면 원래대로 되돌림)", "1"),
+        "  setprop log.tag.FA VERBOSE, log.tag.FA-SVC VERBOSE  → Firebase SDK가 이벤트마다 로그를 남김",
+    ]
+    if debug_app:
+        lines.append(f"  setprop debug.firebase.analytics.app {debug_app}  → 즉시 전송 + Firebase DebugView 표시")
+    lines += [
+        "",
+        color("읽는 법", "1"),
+        f"  {dim('시각')}  {dim('앱')}  {color('event_label', '1')}  {dim('주요 파라미터(page_location 등은 --full)')}",
+        "  여기 찍히면 웹뷰 → 앱 브릿지까지 전달된 것입니다. GA4 서버 도착은 Firebase DebugView나 다음 날 BigQuery로 확인하세요.",
+        "  연타 제한 확인: 여러 번 눌렀는데 한 줄만 찍히면 제한이 동작한 것입니다.",
+        dim("  옵션: --only 문자열,…  --full  --json  --dump  --debug-app 패키지  --quiet(이 안내 생략)  -h"),
+        "",
+        color("GA 이벤트 대기 중… (Ctrl-C 종료)", "33"),
+    ]
+    print("\n".join(lines), flush=True)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="캐시닥·캐시워크 Android 앱 GA 이벤트 실시간 보기")
     ap.add_argument("--serial", help="adb 기기 시리얼 (여러 대 연결 시)")
@@ -249,6 +281,7 @@ def main() -> None:
     ap.add_argument("--dump", action="store_true", help="기기 logcat 버퍼에 이미 있는 이벤트만 출력하고 종료")
     ap.add_argument("--debug-app", help="Firebase 즉시 전송·DebugView 대상 패키지 (예: com.cashdoc.cashdoc)")
     ap.add_argument("--keep-props", action="store_true", help="종료할 때 기기 setprop 을 되돌리지 않음")
+    ap.add_argument("--quiet", action="store_true", help="시작할 때 동작 안내를 생략")
     args = ap.parse_args()
 
     adb = find_adb()
@@ -267,8 +300,11 @@ def main() -> None:
         return
 
     before = set_props(device, args.debug_app)
-    running = {app for pid, app in pids.map.items()}
-    print(color(f"● {model} ({device.serial}) 연결됨 — GA 이벤트 대기 중. 실행 중 앱: {', '.join(sorted(running)) or '없음'} (Ctrl-C 종료)", "33"), flush=True)
+    running = set(pids.map.values())
+    if args.quiet:
+        print(color(f"● {model} ({device.serial}) 연결됨 — GA 이벤트 대기 중. 실행 중 앱: {', '.join(sorted(running)) or '없음'} (Ctrl-C 종료)", "33"), flush=True)
+    else:
+        print_guide(device, model, running, args.debug_app)
 
     proc = subprocess.Popen(device.cmd("logcat", "-T", "1", "-v", "time"), stdout=subprocess.PIPE, text=True, errors="replace", bufsize=1)
 
