@@ -14,6 +14,7 @@
 | [`cashdoc-webview-worktree`](./cashdoc-webview-worktree/SKILL.md) | cashdoc-webview git 워크트리 부트스트랩 — 새 워크트리에서 node_modules/.env 셋업해 lint/typecheck/build 되게. pnpm/engine/env/TTY 에러나 커밋 전 검증 시. |
 | [`running-cashdoc-simulator`](./running-cashdoc-simulator/SKILL.md) | cashdoc-webview 네이티브 앱 시뮬레이터(apps/simulator, `<branch>.sim.cashdoc.me`) 로컬 실행·디버깅 — localias 데몬/sudo/stuck-reload, 기기 없이 dev-login 토큰 주입, 웹뷰 빈 화면·프록시 502, 인앱(Bearer) 인증 검증 시. |
 | [`moneple-cashdoc-local-dev`](./moneple-cashdoc-local-dev/SKILL.md) | moneple(MonepleMainWeb) cashdoc 커뮤니티 로컬 dev 서버 실행 — 배포본으로 바운스/구버전 표시될 때, 검색바·헤더 변경 검증 시. |
+| [`watching-app-ga-logs`](./watching-app-ga-logs/SKILL.md) | 캐시닥·캐시워크 Android 앱에서 GA 이벤트가 찍히는지 확인할 때 — 기기만 연결하면 `scripts/ga_logcat.py`가 터미널에 이벤트를 한 줄씩 실시간 출력(캐시워크 브릿지·캐시닥 테스터·Firebase 로그, 앱 구분, 종료 시 기기 설정 복원). `--dump`로 사후 확인. |
 | [`ship-pr`](./ship-pr/SKILL.md) | 기능/수정이 배포 준비 완료됐을 때 — 브랜치·커밋 후 dev 배포 및 리뷰용 PR 생성. |
 | [`drafting-slack-posts`](./drafting-slack-posts/SKILL.md) | Slack 스레드 답글·공지·팀 공유글 초안 요청 시 — `/copy`로 바로 붙여도 깨지지 않게 응답 전체를 평문 게시글로(`•`·`◦` 글머리, `*`·`>`·코드블록·Insight·앞뒤 설명 없음). |
 | [`drafting-dashboard-mockups`](./drafting-dashboard-mockups/SKILL.md) | Evidence 대시보드 전 차트 초안(HTML 목업) 요청 시 — 다시 뽑을 수 있는 폴더 구조(sql·조회 스크립트·데이터 임베드), 파이프라인이 만들 수 있는 숫자만, 위젯별 예정 지표명, 미수집 지표 '목' 표시, 브라우저 확인과 공유. `shipping-metric-dashboards` 2단계에서 사용. |
